@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using WebAPI.Models;
+
 namespace WebAPI
 {
     public class Program
@@ -7,6 +10,8 @@ namespace WebAPI
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            string Northwind=builder.Configuration.GetConnectionString("Northwind");
+            builder.Services.AddDbContext<NorthwindContext>(opt => opt.UseSqlServer(Northwind));
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
