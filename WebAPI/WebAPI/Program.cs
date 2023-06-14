@@ -14,6 +14,14 @@ namespace WebAPI
             builder.Services.AddDbContext<NorthwindContext>(opt => opt.UseSqlServer(Northwind));
 
             builder.Services.AddControllers();
+            //CORS
+            string MyCorsPolicy = "AllowLocal";
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy(
+                name: MyCorsPolicy,
+                options => options.WithOrigins("*").WithHeaders("*").WithMethods("*"));
+            });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -27,6 +35,7 @@ namespace WebAPI
                 app.UseSwaggerUI();
             }
 
+            app.UseCors();
             app.UseHttpsRedirection();
 
             app.UseAuthorization();

@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations.Schema;
 using WebAPI.Models;
 using WebAPI.Models.DTO;
 
 namespace WebAPI.Controllers
 {
+    [EnableCors("AllowLocal")]
     [Route("api/[controller]")]
     [ApiController]
     public class EmployeesController : ControllerBase
@@ -17,15 +20,17 @@ namespace WebAPI.Controllers
 
 
         [HttpGet]
-        public IEnumerable<EmployeesDTO> GetEmployees()
+        public IActionResult GetEmployees()
         {
-            return _db.Employees.Select(x => new EmployeesDTO
+            var result=  _db.Employees.Select(x => new EmployeesDTO
             {
                 EmployeeId = x.EmployeeId,
                 FirstName = x.FirstName,
                 LastName = x.LastName,
                 Title = x.Title
             });
+
+            return Ok(result);
         }
         //GET{id}
         [HttpGet("{id}")]

@@ -1,0 +1,81 @@
+﻿@section Styles{
+    <style>
+        thead{
+            color:blue;
+            background-color:aqua;
+        }
+    </style>
+}
+
+<div id="app" class="container">  
+    <div class="form-group">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <td>編輯</td>
+                    <td>EmployeeID</td>
+                    <td>FirstName</td>
+                    <td>LastName</td>
+                    <td>Title</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="item in Employees">
+                    <template v-if="item.Edit==true">
+                        <td>
+                            <button class="btn btn-success">修改</button>
+                            <button class="btn btn-danger">取消</button>
+                        </td>
+                        <td>{{item.employeeId}}</td>
+                        <td><input v-model="item.firstName"/></td>
+                        <td><input v-model="item.lastName" /></td>
+                        <td><input v-model="item.title" /></td>
+                    </template>
+                    <template v-else>
+                        <td>
+                            <button class="btn btn-primary"></button>
+                            <button class="btn btn-danger"></button>
+                        </td>
+                        <td>{{item.employeeId}}</td>
+                        <td>{{item.firstName}}</td>
+                        <td>{{item.lastName}}</td>
+                        <td>{{item.title}}</td>                       
+                    </template>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts{
+    <script src="~/vue/vue.min.js"></script>
+    <script src="~/axios/axios.min.js"></script>
+    <script>
+        var baseAddress = 'https://localhost:7097/';
+        var app=new Vue({
+            el:"#app",
+            data:{
+                Employees:[],
+            },
+            mounted:function(){
+                this.getEmployees();
+            },
+            computed:{
+                
+            },
+            methods:{
+                getEmployees:function(){
+                    axios.get(`${baseAddress}api/Employees`)
+                        .then(response => {
+                            this.Employees = response.data;
+                            console.log(employees);
+                        })
+                        .catch(error => {
+                            // 錯誤處理
+                            console.error(error);
+                        });
+                },
+            }
+        });
+    </script>
+}
