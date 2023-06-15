@@ -1,13 +1,21 @@
 ﻿@section Styles{
     <style>
-        thead{
-            color:blue;
-            background-color:aqua;
+        thead {
+            color: blue;
+            background-color: aqua;
         }
     </style>
 }
 
-<div id="app" class="container">  
+<div id="app" class="container">
+    <label>輸入ID:</label><input type="text" v-model="EmployeeId" @@keyup="getEmployee()">
+    <div class="form-group">
+        @*新增按鍵*@
+        <!-- Modal trigger button -->
+        <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#modalId" @@click="showCreatePage()">
+            新增員工紀錄
+        </button>
+    </div>
     <div class="form-group">
         <table class="table table-striped table-hover">
             <thead>
@@ -21,61 +29,142 @@
             </thead>
             <tbody>
                 <tr v-for="item in Employees">
-                    <template v-if="item.Edit==true">
+                    <template>
                         <td>
-                            <button class="btn btn-success">修改</button>
-                            <button class="btn btn-danger">取消</button>
-                        </td>
-                        <td>{{item.employeeId}}</td>
-                        <td><input v-model="item.firstName"/></td>
-                        <td><input v-model="item.lastName" /></td>
-                        <td><input v-model="item.title" /></td>
-                    </template>
-                    <template v-else>
-                        <td>
-                            <button class="btn btn-primary"></button>
-                            <button class="btn btn-danger"></button>
+                            <button class="btn btn-primary" @@click="edit(item.employeeId)">編輯</button>
+                            <button class="btn btn-danger" @@click="deleteEmp(item.employeeId)">刪除</button>
                         </td>
                         <td>{{item.employeeId}}</td>
                         <td>{{item.firstName}}</td>
                         <td>{{item.lastName}}</td>
-                        <td>{{item.title}}</td>                       
+                        <td>{{item.title}}</td>
                     </template>
                 </tr>
             </tbody>
         </table>
+    </div>
+    <div class="form-group">
+        @*新增畫面*@
+        <div class="modal fade" id="createPage" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-labelledby="modalTitleId" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitleId">Modal title</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @*網頁的內容寫在這*@
+                        <div class="form-group">
+                            <label class="form-label">FirstName</label>
+                            <input class="form-control" v-model="CreateFirstName" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">LastName</label>
+                            <input class="form-control" v-model="CreateLastName" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Title</label>
+                            <input class="form-control" v-model="CreateTitle" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                        <button type="button" @@click="createEmp()" class="btn btn-primary">新增</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts{
     <script src="~/vue/vue.min.js"></script>
     <script src="~/axios/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         var baseAddress = 'https://localhost:7097/';
-        var app=new Vue({
-            el:"#app",
-            data:{
-                Employees:[],
+        var app = new Vue({
+            el: "#app",
+            data: {
+                Employees: [],
+                EmployeeId: null,
+                CreateFirstName: "",
+                CreateLastName: "",
+                CreateTitle: "",
             },
-            mounted:function(){
+            mounted: function () {
                 this.getEmployees();
             },
-            computed:{
-                
+            computed: {
+
             },
-            methods:{
-                getEmployees:function(){
+            methods: {
+                getEmployees: function () {
                     axios.get(`${baseAddress}api/Employees`)
                         .then(response => {
                             this.Employees = response.data;
-                            console.log(employees);
                         })
                         .catch(error => {
                             // 錯誤處理
                             console.error(error);
                         });
                 },
-            }
-        });
+                getEmployee: function () {
+                    axios.get(`${baseAddress}api/Employees/${this.EmployeeId}`)
+                        .then(response => {
+                            this.Employees = response.data;
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                },
+                showCreatePage: function () {
+                    $("#createPage").modal('show');
+                },
+                createEmp: function () {
+                    var request = {
+                        EmployeeId: 0,
+                        FirstName: this.CreateFirstName,
+                        LastName: this.CreateLastName,
+                        Title: this.CreateTitle,
+                    };
+                    axios.post(`${baseAddress}api/Employees/`, request).then(res => {
+                        console.log(res.data)
+                        this.getEmployees();
+                    }).catch(error => console.log(error));
+                 },
+                deleteEmp: function(id) {
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                        axios.delete(`${baseAddress}api/Employees/${id}`)
+                            .then(response => {
+                                console.log('刪除成功');
+                                this.getEmployees();
+                            })
+                            .catch(error => {
+                                console.log(error);
+                            });
+                            Swal.fire(
+                                'Deleted!',
+                                'Your file has been deleted.',
+                                'success'
+                            )
+                        }
+                    })                    
+                },
+                updateEmp: function (item) {
+
+                },
+
+                    }
+                });
     </script>
 }

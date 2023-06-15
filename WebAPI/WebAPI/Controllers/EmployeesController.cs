@@ -51,14 +51,13 @@ namespace WebAPI.Controllers
         {
             Employees emp = new Employees()
             {
-                EmployeeId = employees.EmployeeId,
                 FirstName = employees.FirstName,
                 LastName = employees.LastName,
                 Title = employees.Title
             };
             _db.Employees.Add(emp);
             _db.SaveChanges();
-            return Ok(emp);
+            return Ok("新增成功");
 
         }
 
@@ -75,11 +74,11 @@ namespace WebAPI.Controllers
                 _db.SaveChanges();
                 return Ok(employees);
             }
-            return BadRequest();
+            return BadRequest("更新失敗!");
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteEmployees(int id,EmployeesDTO employees)
+        public IActionResult DeleteEmployees(int id)
         {
             var findresult = _db.Employees.Find(id);
             if (findresult != null)
@@ -88,7 +87,7 @@ namespace WebAPI.Controllers
                 _db.SaveChanges();
                 return Ok($"員工編號:{id},資料已刪除!");
             }
-            return BadRequest($"找不到編號為{id}的員工");
+            return BadRequest("刪除失敗");
         }
 
         
