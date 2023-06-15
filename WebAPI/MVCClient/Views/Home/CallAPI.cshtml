@@ -8,12 +8,12 @@
 }
 
 <div id="app" class="container">
-    <label>輸入ID:</label><input type="text" v-model="EmployeeId" @@keyup="getEmployee()">
+    <input type="text" v-model="EmployeeId" placeholder="請輸入ID" @@keyup="getEmployee()">
     <div class="form-group">
         @*新增按鍵*@
         <!-- Modal trigger button -->
         <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#modalId" @@click="showCreatePage()">
-            新增員工紀錄
+            新增員工
         </button>
     </div>
     <div class="form-group">
@@ -31,7 +31,7 @@
                 <tr v-for="item in Employees">
                     <template>
                         <td>
-                            <button class="btn btn-primary" @@click="edit(item.employeeId)">編輯</button>
+                            <button class="btn btn-primary" @@click="editEmp(item)">編輯</button>
                             <button class="btn btn-danger" @@click="deleteEmp(item.employeeId)">刪除</button>
                         </td>
                         <td>{{item.employeeId}}</td>
@@ -49,10 +49,10 @@
             <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="modalTitleId">Modal title</h5>
+                        <h5 class="modal-title" id="modalTitleId">員工管理</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body" v-if="btnStatus">
                         @*網頁的內容寫在這*@
                         <div class="form-group">
                             <label class="form-label">FirstName</label>
@@ -67,9 +67,25 @@
                             <input class="form-control" v-model="CreateTitle" />
                         </div>
                     </div>
+                    <div class="modal-body" v-else>
+                        @*網頁的內容寫在這*@
+                        <div class="form-group">
+                            <label class="form-label">FirstName</label>
+                            <input class="form-control" v-model="EditFirstName" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">LastName</label>
+                            <input class="form-control" v-model="EditLastName" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Title</label>
+                            <input class="form-control" v-model="EditTitle" />
+                        </div>
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
-                        <button type="button" @@click="createEmp()" class="btn btn-primary">新增</button>
+                        <button type="button" class="btn btn-primary" v-if="btnStatus" @@click="createEmp()">新增</button>
+                        <button type="button" class="btn btn-primary" v-else @@click="updateEmp()">修改</button>
                     </div>
                 </div>
             </div>
@@ -91,6 +107,12 @@
                 CreateFirstName: "",
                 CreateLastName: "",
                 CreateTitle: "",
+                EditEmployeeId:null,
+                EditFirstName:"",
+                EditLastName:"",
+                EditTitle:"",
+                btnStatus: true,
+
             },
             mounted: function () {
                 this.getEmployees();
@@ -99,28 +121,32 @@
 
             },
             methods: {
+                //GetAllEmp
                 getEmployees: function () {
                     axios.get(`${baseAddress}api/Employees`)
                         .then(response => {
                             this.Employees = response.data;
                         })
                         .catch(error => {
-                            // 錯誤處理
-                            console.error(error);
+                            alert(error.data);
                         });
                 },
-                getEmployee: function () {
+                //GetSingleEmp
+                getEmployee: function () {                    
                     axios.get(`${baseAddress}api/Employees/${this.EmployeeId}`)
                         .then(response => {
                             this.Employees = response.data;
                         })
                         .catch(error => {
-                            console.log(error);
+                            alert(error.data);
                         });
                 },
+                //Modal
                 showCreatePage: function () {
+                    this.btnStatus=true;
                     $("#createPage").modal('show');
                 },
+                //新增員工
                 createEmp: function () {
                     var request = {
                         EmployeeId: 0,
@@ -129,10 +155,11 @@
                         Title: this.CreateTitle,
                     };
                     axios.post(`${baseAddress}api/Employees/`, request).then(res => {
-                        console.log(res.data)
+                        $("#createPage").modal('hide');
                         this.getEmployees();
-                    }).catch(error => console.log(error));
+                    }).catch(error => alert(error.data));
                  },
+                //刪除員工
                 deleteEmp: function(id) {
                     Swal.fire({
                         title: 'Are you sure?',
@@ -145,8 +172,8 @@
                     }).then((result) => {
                         if (result.isConfirmed) {
                         axios.delete(`${baseAddress}api/Employees/${id}`)
-                            .then(response => {
-                                console.log('刪除成功');
+                            .then(res => {
+                                alert(res.data)
                                 this.getEmployees();
                             })
                             .catch(error => {
@@ -160,11 +187,32 @@
                         }
                     })                    
                 },
-                updateEmp: function (item) {
-
+                //編輯員工
+                editEmp: function (item) {
+                    this.btnStatus = false;
+                    $("#createPage").modal('show');
+                    this.EditEmployeeId = item.employeeId;
+                    this.EditFirstName = item.firstName;
+                    this.EditLastName = item.lastName;
+                    this.EditTitle = item.title;
+                },
+                //修改員工
+                updateEmp: function () {
+                    var request = {
+                        EmployeeId: this.EditEmployeeId,
+                        FirstName: this.EditFirstName,
+                        LastName: this.EditLastName,
+                        Title: this.EditTitle
+                    };
+                    axios.put(`${baseAddress}api/Employees/${this.EditEmployeeId}`, request)
+                    .then(res => {
+                        alert(res.data)
+                        $("#createPage").modal('hide');
+                        this.getEmployees();
+                    }).catch(error => alert(error.data));
                 },
 
-                    }
-                });
+            }
+        });
     </script>
 }

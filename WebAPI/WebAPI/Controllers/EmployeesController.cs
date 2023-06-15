@@ -34,15 +34,16 @@ namespace WebAPI.Controllers
         }
         //GET{id}
         [HttpGet("{id}")]
-        public IEnumerable<EmployeesDTO> GetEmployees(int id)
+        public IActionResult GetEmployees(int id)
         {
-            return _db.Employees.Where(e => e.EmployeeId == id).Select(x => new EmployeesDTO
+            var result=_db.Employees.Where(e => e.EmployeeId == id).Select(x => new EmployeesDTO
             {
                 EmployeeId = x.EmployeeId,
                 FirstName = x.FirstName,
                 LastName = x.LastName,
                 Title = x.Title
             });
+            return Ok(result);
         }
 
         //Post
@@ -72,9 +73,9 @@ namespace WebAPI.Controllers
                 findresult.Title = employees.Title;
                 _db.Employees.Update(findresult);
                 _db.SaveChanges();
-                return Ok(employees);
+                return Ok("修改成功!!");
             }
-            return BadRequest("更新失敗!");
+            return BadRequest("修改失敗!");
         }
 
         [HttpDelete("{id}")]
