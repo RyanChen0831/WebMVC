@@ -155,6 +155,7 @@
                         Title: this.CreateTitle,
                     };
                     axios.post(`${baseAddress}api/Employees/`, request).then(res => {
+                        alert(res.data)
                         $("#createPage").modal('hide');
                         this.getEmployees();
                     }).catch(error => alert(error.data));
@@ -173,7 +174,6 @@
                         if (result.isConfirmed) {
                         axios.delete(`${baseAddress}api/Employees/${id}`)
                             .then(res => {
-                                alert(res.data)
                                 this.getEmployees();
                             })
                             .catch(error => {
